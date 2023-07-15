@@ -13,10 +13,13 @@ build: tidy
 tidy: go.mod
 	go mod tidy
 
+serve: build
+	./$(NAME)
+
 go.mod:
 	go mod init $(MODULE_NAME)
 
 client:
 	make -C client
 
-.PHONY: build client tidy
+.PHONY: build client serve tidy
