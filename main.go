@@ -24,7 +24,7 @@ import (
 const (
 	rendezvousString = "myspace"
 	defaultPort      = "5002"
-	defaultAddr      = "0.0.0.0"
+	defaultAddr      = "127.0.0.1"
 )
 
 var (
