@@ -11,7 +11,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var addr = flag.String("baseurl", "localhost:8080", "http service address")
+var addr = flag.String("baseurl", "localhost:5002", "http service address")
 var topic = flag.String("topicname", "myspace", "websocket topic")
 
 func main() {

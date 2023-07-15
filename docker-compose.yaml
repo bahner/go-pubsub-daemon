@@ -1,0 +1,10 @@
+---
+
+services:
+  myspace-pubsub-daemon:
+    image: myspace-pubsub-daemon:latest
+    ports:
+      - "${MYSPACE_PUBSUB_DAEMON_PORT}:${MYSPACE_PUBSUB_DAEMON_PORT}"
+    environment:
+      - MYSPACE_PUBSUB_DAEMON_PORT
+      - MYSPACE_PUBSUB_DAEMON_ADDR

@@ -2,9 +2,12 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"sync"
+
+	"go.deanishe.net/env"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -20,25 +23,40 @@ import (
 
 const (
 	rendezvousString = "myspace"
-	protocolID       = "/myspace/1.0.0"
-	logLevel         = "info"
-	listenSocket     = "0.0.0.0:8080"
+	defaultPort      = "5002"
+	defaultAddr      = "0.0.0.0"
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
+var (
+	pub      *pubsub.PubSub
+	topics   sync.Map
+	upgrader = websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+	}
+)
 
-var pub *pubsub.PubSub
-var topics sync.Map
+var (
+	logLevel = env.Get("MYSPACE_PUBSUB_DAEMON_LOG_LEVEL", "info")
+	port     = flag.String("port", env.Get("MYSPACE_PUBSUB_DAEMON_PORT", defaultPort), "Port to listen on")
+	addr     = flag.String("addr", env.Get("MYSPACE_PUBSUB_DAEMON_ADDR", defaultAddr), "Address to listen on")
+)
 
 type Topic struct {
 	Mutex       sync.Mutex
 	PubSubTopic *pubsub.Topic
+	Conn        *websocket.Conn
 }
 
 func main() {
+
+	ctx := context.Background()
+
+	flag.Parse()
+
+	listenSocket := fmt.Sprintf("%s:%s", *addr, *port)
+	fmt.Println("Listening on: ", listenSocket)
+
 	// Set log level
 	lvl, err := logging.LevelFromString(logLevel)
 	if err != nil {
@@ -47,8 +65,6 @@ func main() {
 	logging.SetAllLoggers(lvl)
 	logger := logging.Logger("myspace")
 	logger.Info("Starting myspace libp2p pubsub server...")
-
-	ctx := context.Background()
 
 	// Initialize libp2p host with DHT routing
 	host, err := libp2p.New(
@@ -95,8 +111,15 @@ func main() {
 
 func handlePubSub(conn *websocket.Conn, topic *Topic) {
 	topic.Mutex.Lock()
-	defer topic.Mutex.Unlock()
+	if topic.Conn != nil {
+		topic.Conn.Close()
+	}
+	topic.Conn = conn
+	topic.Mutex.Unlock()
 
+	go handleClient(conn, topic)
+}
+func handleClient(conn *websocket.Conn, topic *Topic) {
 	msg := fmt.Sprintf("Welcome to the chat room %q!", topic.PubSubTopic)
 	sendText(conn, msg)
 
@@ -106,7 +129,6 @@ func handlePubSub(conn *websocket.Conn, topic *Topic) {
 	}
 	defer sub.Cancel()
 
-	// Use a wait group to ensure both goroutines finish before exiting
 	var wg sync.WaitGroup
 	wg.Add(2)
 
@@ -116,35 +138,40 @@ func handlePubSub(conn *websocket.Conn, topic *Topic) {
 		for {
 			_, message, err := conn.ReadMessage()
 			if err != nil {
+				// Log the error and return from the goroutine
+				log.Printf("read error: %v", err)
 				return
 			}
 
 			// Publish the message to the pubsub topic
 			err = topic.PubSubTopic.Publish(context.Background(), message)
 			if err != nil {
-				log.Fatal(err)
+				log.Printf("publish error: %v", err)
+				return
 			}
 		}
 	}()
 
-	// Goroutine for reading from the pubsub topic
+	// Goroutine for writing to the WebSocket
 	go func() {
 		defer wg.Done()
 		for {
-			// Receive the next message from the pubsub topic
 			msg, err := sub.Next(context.Background())
 			if err != nil {
+				// Log the error and return from the goroutine
+				log.Printf("subscription error: %v", err)
 				return
 			}
 
-			// Send the message over the WebSocket connection
-			if err := conn.WriteMessage(websocket.TextMessage, msg.Data); err != nil {
+			// Write the message back to the WebSocket
+			err = conn.WriteMessage(websocket.TextMessage, msg.GetData())
+			if err != nil {
+				log.Printf("write error: %v", err)
 				return
 			}
 		}
 	}()
 
-	// Wait for both goroutines to finish
 	wg.Wait()
 }
 
