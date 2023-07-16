@@ -6,13 +6,17 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	pubsub "github.com/libp2p/go-libp2p-pubsub"
 )
 
-// WebSocketUpgrader upgrades an HTTP connection to a WebSocket connection
-var WebSocketUpgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
+var (
+	pub      *pubsub.PubSub
+	topics   sync.Map
+	upgrader = websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+	}
+)
 
 // List Topics Handler
 func listTopicsHandler(c *gin.Context) {
@@ -59,7 +63,7 @@ func joinTopicHandler(c *gin.Context) {
 		return
 	}
 
-	conn, err := WebSocketUpgrader.Upgrade(c.Writer, c.Request, nil)
+	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upgrade connection"})
 		return

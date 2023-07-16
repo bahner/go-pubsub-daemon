@@ -5,10 +5,8 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"sync"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
 	logging "github.com/ipfs/go-log"
 	"github.com/libp2p/go-libp2p"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
@@ -28,17 +26,11 @@ var (
 )
 
 var (
-	pub      *pubsub.PubSub
-	topics   sync.Map
-	upgrader = websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
-	}
 
 	// API
 	apiPath = fmt.Sprintf("/api/%s", apiVersion)
 
-	// Logging
+	// Logging for libp2p
 	logger = logging.Logger("myspace")
 
 	// Flags
