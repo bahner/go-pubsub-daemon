@@ -44,7 +44,7 @@ clean:
 	rm -f $(NAME)
 	make -C client clean
 
-dist-clean: clean
+distclean: clean
 	rm -f $(shell git ls-files --exclude-standard --others)
 
 .PHONY: build client serve tidy
