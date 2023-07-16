@@ -19,6 +19,7 @@ const (
 	defaultPort      = "5002"
 	defaultAddr      = "127.0.0.1"
 	apiVersion       = "v0"
+	multiAddr        = "/ip4/0.0.0.0/tcp/0"
 )
 
 var (
@@ -46,7 +47,7 @@ func main() {
 
 	// Initialize libp2p host with DHT routing
 	host, err := libp2p.New(
-		libp2p.ListenAddrStrings(fmt.Sprintf("/ip4/%s/tcp/%s", *addr, *port)),
+		libp2p.ListenAddrStrings(multiAddr),
 	)
 	if err != nil {
 		log.Fatal(err)
