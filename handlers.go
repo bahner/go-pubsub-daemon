@@ -59,20 +59,17 @@ func joinTopicHandler(c *gin.Context) {
 		return
 	}
 
-	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	conn, err := WebSocketUpgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upgrade connection"})
 		return
 	}
 
 	topic.Mutex.Lock()
-	if topic.Conn != nil {
-		topic.Conn.Close()
-	}
-	topic.Conn = conn
+	topic.Conn = conn // Assign the new connection to the topic
 	topic.Mutex.Unlock()
 
-	go handleClient(conn, topic)
+	go handleClient(conn, topic) // Move handleClient inside the critical section
 }
 
 // List Peers Handler
