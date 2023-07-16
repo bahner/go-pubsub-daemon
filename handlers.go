@@ -163,3 +163,41 @@ func webSocketHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "WebSocket connection established"})
 }
+
+// Publish Message Handler
+func publishMessageHandler(c *gin.Context) {
+	var requestBody struct {
+		TopicName string `json:"topicName"`
+		Message   string `json:"message"`
+	}
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	topicName := requestBody.TopicName
+	message := requestBody.Message
+
+	topic, ok := topics.Load(topicName)
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Topic not found"})
+		return
+	}
+
+	topicObj := topic.(*Topic)
+	topicObj.Mutex.Lock()
+	defer topicObj.Mutex.Unlock()
+
+	if topicObj.Conn == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No connections available"})
+		return
+	}
+
+	if err := topicObj.Conn.WriteMessage(websocket.TextMessage, []byte(message)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to publish message"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Message published successfully"})
+}

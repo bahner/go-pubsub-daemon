@@ -3,21 +3,37 @@ package main
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 	"github.com/libp2p/go-libp2p/core/host"
+	"github.com/libp2p/go-libp2p/core/peer"
 )
 
-// initDHT initializes the DHT and bootstraps it
 func initDHT(ctx context.Context, h host.Host) (*dht.IpfsDHT, error) {
-	dhtInstance, err := dht.New(ctx, h)
+	// Start a DHT, for use in peer discovery. We can't just make a new DHT
+	// client because we want each peer to maintain its own local copy of the
+	// DHT, so that the bootstrapping node of the DHT can go down without
+	// inhibiting future peer discovery.
+	kademliaDHT, err := dht.New(ctx, h)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create DHT instance: %w", err)
+		panic(err)
 	}
-
-	if err := dhtInstance.Bootstrap(ctx); err != nil {
-		return nil, fmt.Errorf("failed to bootstrap DHT: %w", err)
+	if err = kademliaDHT.Bootstrap(ctx); err != nil {
+		panic(err)
 	}
+	var wg sync.WaitGroup
+	for _, peerAddr := range dht.DefaultBootstrapPeers {
+		peerinfo, _ := peer.AddrInfoFromP2pAddr(peerAddr)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if err := h.Connect(ctx, *peerinfo); err != nil {
+				fmt.Println("Bootstrap warning:", err)
+			}
+		}()
+	}
+	wg.Wait()
 
-	return dhtInstance, nil
+	return kademliaDHT, nil
 }
