@@ -18,6 +18,7 @@ const (
 	rendezvousString = "myspace"
 	defaultPort      = "5002"
 	defaultAddr      = "127.0.0.1"
+	apiVersion       = "v0"
 )
 
 var (
@@ -30,14 +31,13 @@ var (
 
 	port = flag.String("port", defaultPort, "Port to listen on")
 	addr = flag.String("addr", defaultAddr, "Address to listen on")
+
+	apiPath = fmt.Sprintf("/api/%s", apiVersion)
 )
 
 func main() {
 	ctx := context.Background()
 	flag.Parse()
-
-	listenSocket := fmt.Sprintf("%s:%s", *addr, *port)
-	fmt.Println("Listening on:", listenSocket)
 
 	// Set log level
 	logging.SetLogLevel("myspace", "info")
@@ -63,12 +63,13 @@ func main() {
 	router := gin.Default()
 
 	// API Endpoints
-	router.GET("/topics", listTopicsHandler)
-	router.POST("/topics", createTopicHandler)
-	router.GET("/topics/:topicID", getTopicDetailsHandler)
-	router.GET("/topics/:topicID/peers", listPeersHandler)
-	router.GET("/topics/:topicID/connect", connectWebSocketHandler)
-	router.GET("/topics/:topicID/join", joinTopicHandler)
+	router.GET(apiPath+"/pubsub/topics", listTopicsHandler)
+	router.POST(apiPath+"/pubsub/topics", createTopicHandler)
+	router.GET(apiPath+"/pubsub/topics/:topicID", getTopicDetailsHandler)
+	router.GET(apiPath+"/pubsub/topics/:topicID/peers", listPeersHandler)
+	router.GET(apiPath+"/pubsub/topics/:topicID/ws", webSocketHandler)
+	router.GET(apiPath+"/pubsub/topics/:topicID/join", joinTopicHandler)
 
+	listenSocket := fmt.Sprintf("%s:%s", *addr, *port)
 	router.Run(listenSocket)
 }

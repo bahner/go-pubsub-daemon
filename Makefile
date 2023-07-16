@@ -1,7 +1,7 @@
 #!/usr/bin/make -ef
 
-GO_VERSION ?= 1.19.1
-GO = go$(GO_VERSION)
+GO_VERSION ?= 1.20
+GO = go
 
 NAME = myspace-pubsub-daemon
 MODULE_NAME = github.com/bahner/myspace-pubsub-daemon

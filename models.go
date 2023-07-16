@@ -12,4 +12,6 @@ type Topic struct {
 	Mutex       sync.Mutex
 	PubSubTopic *pubsub.Topic
 	Conn        *websocket.Conn
+	TopicName   string
+	TopicID     string
 }

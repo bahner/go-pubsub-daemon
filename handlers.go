@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/multiformats/go-multibase"
 )
 
 // WebSocketUpgrader upgrades an HTTP connection to a WebSocket connection
@@ -38,6 +39,11 @@ func createTopicHandler(c *gin.Context) {
 	}
 
 	topicName := requestBody.TopicName
+	topicID, err := multibase.Encode(multibase.Base64url, []byte(topicName))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to encode topic name for topic ID"})
+		return
+	}
 
 	_, ok := topics.Load(topicName)
 	if ok {
@@ -45,7 +51,7 @@ func createTopicHandler(c *gin.Context) {
 		return
 	}
 
-	pubSubTopic, err := pub.Join(topicName)
+	pubSubTopic, err := pub.Join(topicID)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -53,6 +59,8 @@ func createTopicHandler(c *gin.Context) {
 	topic := &Topic{
 		PubSubTopic: pubSubTopic,
 		Mutex:       sync.Mutex{},
+		TopicName:   topicName,
+		TopicID:     topicID,
 	}
 
 	topics.Store(topicName, topic)
@@ -127,8 +135,8 @@ func listPeersHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"peers": peers})
 }
 
-// Connect to WebSocket Handler
-func connectWebSocketHandler(c *gin.Context) {
+// Webocket Handler
+func webSocketHandler(c *gin.Context) {
 	topicName := c.Param("topicID")
 
 	topic, ok := topics.Load(topicName)
