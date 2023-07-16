@@ -69,7 +69,7 @@ func main() {
 	router.POST(apiPath+"/pubsub/topics/:topicID", publishMessageHandler)
 	router.GET(apiPath+"/pubsub/topics/:topicID", getTopicDetailsHandler)
 	router.GET(apiPath+"/pubsub/topics/:topicID/peers", listPeersHandler)
-	router.GET(apiPath+"/pubsub/topics/:topicID/ws", webSocketHandler)
+	// router.GET(apiPath+"/pubsub/topics/:topicID/ws", webSocketHandler)
 	router.GET(apiPath+"/pubsub/topics/:topicID/join", joinTopicHandler)
 
 	listenSocket := fmt.Sprintf("%s:%s", *addr, *port)

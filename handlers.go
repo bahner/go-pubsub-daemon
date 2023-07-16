@@ -45,7 +45,7 @@ func createTopicHandler(c *gin.Context) {
 		return
 	}
 
-	_, ok := topics.Load(topicName)
+	_, ok := topics.Load(topicID)
 	if ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Topic already exists"})
 		return
@@ -56,39 +56,42 @@ func createTopicHandler(c *gin.Context) {
 		log.Fatal(err)
 	}
 
+	topicDetails := TopicDetails{
+		TopicName: topicName,
+		TopicID:   topicID,
+	}
+
 	topic := &Topic{
 		PubSubTopic: pubSubTopic,
 		Mutex:       sync.Mutex{},
-		TopicName:   topicName,
-		TopicID:     topicID,
+		Details:     topicDetails,
 	}
 
-	topics.Store(topicName, topic)
+	topics.Store(topicID, topic)
 
-	c.JSON(http.StatusCreated, gin.H{"topic": topicName})
+	c.JSON(http.StatusCreated, topicDetails)
 }
 
 // Get Topic Details Handler
 func getTopicDetailsHandler(c *gin.Context) {
-	topicName := c.Param("topicID")
+	topicID := c.Param("topicID")
 
-	topic, ok := topics.Load(topicName)
+	topic, ok := topics.Load(topicID)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Topic not found"})
 		return
 	}
 
-	// FIXME
-	_ = topic
+	topicDetails := topic.(*Topic).Details
 
-	c.JSON(http.StatusOK, gin.H{"topic": topicName})
+	c.JSON(http.StatusOK, topicDetails)
 }
 
 // Join Topic Handler
 func joinTopicHandler(c *gin.Context) {
-	topicName := c.Param("topicID")
+	topicID := c.Param("topicID")
 
-	topic, ok := topics.Load(topicName)
+	topic, ok := topics.Load(topicID)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Topic not found"})
 		return
@@ -135,34 +138,34 @@ func listPeersHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"peers": peers})
 }
 
-// Webocket Handler
-func webSocketHandler(c *gin.Context) {
-	topicName := c.Param("topicID")
+// // Webocket Handler
+// func webSocketHandler(c *gin.Context) {
+// 	topicName := c.Param("topicID")
 
-	topic, ok := topics.Load(topicName)
-	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Topic not found"})
-		return
-	}
+// 	topic, ok := topics.Load(topicName)
+// 	if !ok {
+// 		c.JSON(http.StatusNotFound, gin.H{"error": "Topic not found"})
+// 		return
+// 	}
 
-	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upgrade connection"})
-		return
-	}
+// 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upgrade connection"})
+// 		return
+// 	}
 
-	topicObj := topic.(*Topic)
-	topicObj.Mutex.Lock()
-	if topicObj.Conn != nil {
-		topicObj.Conn.Close()
-	}
-	topicObj.Conn = conn
-	topicObj.Mutex.Unlock()
+// 	topicObj := topic.(*Topic)
+// 	topicObj.Mutex.Lock()
+// 	if topicObj.Conn != nil {
+// 		topicObj.Conn.Close()
+// 	}
+// 	topicObj.Conn = conn
+// 	topicObj.Mutex.Unlock()
 
-	go handleClient(conn, topicObj)
+// 	go handleClient(conn, topicObj)
 
-	c.JSON(http.StatusOK, gin.H{"message": "WebSocket connection established"})
-}
+// 	c.JSON(http.StatusOK, gin.H{"message": "WebSocket connection established"})
+// }
 
 // Publish Message Handler
 func publishMessageHandler(c *gin.Context) {
