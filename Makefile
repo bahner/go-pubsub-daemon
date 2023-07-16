@@ -38,7 +38,7 @@ install: build
 	install -Dm755 $(NAME) $(DESTDIR)$(PREFIX)/bin/$(NAME)
 
 client:
-	make -C client|
+	make -C client
 
 clean:
 	rm -f $(NAME)
