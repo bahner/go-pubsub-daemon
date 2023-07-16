@@ -1,7 +1,5 @@
 #!/usr/bin/make -ef
 
-GO ?= go1.19.11
-
 NAME = client
 MODULE_NAME = myspace/$(NAME)
 
@@ -14,4 +12,7 @@ tidy: go.mod
 go.mod:
 	go mod init $(MODULE_NAME)
 
-.PHONY: build tidy
+clean:
+	rm -f client $(NAME)
+
+.PHONY: build clean tidy

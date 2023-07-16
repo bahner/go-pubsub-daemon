@@ -2,9 +2,9 @@
 
 services:
   myspace-pubsub-daemon:
-    image: myspace-pubsub-daemon:latest
+    image: ${IMAGE}
     ports:
-      - "${MYSPACE_PUBSUB_DAEMON_PORT}:${MYSPACE_PUBSUB_DAEMON_PORT}"
+      - "${MYSPACE_PUBSUB_DAEMON_ADDR}:${MYSPACE_PUBSUB_DAEMON_PORT}:${MYSPACE_PUBSUB_DAEMON_PORT}"
     environment:
       - MYSPACE_PUBSUB_DAEMON_PORT
       - MYSPACE_PUBSUB_DAEMON_ADDR
