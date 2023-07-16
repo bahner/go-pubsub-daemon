@@ -47,7 +47,7 @@ func main() {
 	logging.SetLogLevel("myspace", *logLevel)
 	logger.Info("Starting myspace libp2p pubsub server...")
 
-	// Initialize libp2p host with DHT routing
+	// Start libp2p host
 	host, err := libp2p.New(
 		libp2p.ListenAddrStrings(multiAddr),
 	)
@@ -55,8 +55,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Start peer discovery to find other peers
 	go discoverPeers(ctx, host, rendezvousString)
 
+	// Start pubsub service
 	pub, err = pubsub.NewGossipSub(ctx, host)
 	if err != nil {
 		log.Fatal(err)
@@ -67,10 +69,10 @@ func main() {
 
 	// API Endpoints
 	router.GET(apiPath+"/topics", listTopicsHandler)
-	// FIXME: router.POST(apiPath+"/topics/:topicID", publishMessageHandler)
 	router.GET(apiPath+"/topics/:topicID/peers", listPeersHandler)
 	router.GET(apiPath+"/topics/:topicID", joinTopicHandler)
 
+	// Start server on the configured socket
 	listenSocket := fmt.Sprintf("%s:%s", *addr, *port)
 	router.Run(listenSocket)
 }

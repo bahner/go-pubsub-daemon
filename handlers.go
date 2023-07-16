@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"sync"
 
@@ -78,9 +79,9 @@ func joinTopicHandler(c *gin.Context) {
 
 // List Peers Handler
 func listPeersHandler(c *gin.Context) {
-	topicName := c.Param("topicID")
+	topicID := c.Param("topicID")
 
-	topic, ok := topics.Load(topicName)
+	topic, ok := topics.Load(topicID)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Topic not found"})
 		return
@@ -92,75 +93,9 @@ func listPeersHandler(c *gin.Context) {
 
 	var peers []string
 	for _, peer := range topicObj.PubSubTopic.ListPeers() {
+		fmt.Printf("TopicPeer: %s\n", peer)
 		peers = append(peers, peer.String())
 	}
 
 	c.JSON(http.StatusOK, gin.H{"peers": peers})
 }
-
-// // Webocket Handler
-// func webSocketHandler(c *gin.Context) {
-// 	topicName := c.Param("topicID")
-
-// 	topic, ok := topics.Load(topicName)
-// 	if !ok {
-// 		c.JSON(http.StatusNotFound, gin.H{"error": "Topic not found"})
-// 		return
-// 	}
-
-// 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
-// 	if err != nil {
-// 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upgrade connection"})
-// 		return
-// 	}
-
-// 	topicObj := topic.(*Topic)
-// 	topicObj.Mutex.Lock()
-// 	if topicObj.Conn != nil {
-// 		topicObj.Conn.Close()
-// 	}
-// 	topicObj.Conn = conn
-// 	topicObj.Mutex.Unlock()
-
-// 	go handleClient(conn, topicObj)
-
-// 	c.JSON(http.StatusOK, gin.H{"message": "WebSocket connection established"})
-// }
-
-// // Publish Message Handler
-// func publishMessageHandler(c *gin.Context) {
-// 	var requestBody struct {
-// 		TopicName string `json:"topicName"`
-// 		Message   string `json:"message"`
-// 	}
-
-// 	if err := c.ShouldBindJSON(&requestBody); err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 		return
-// 	}
-
-// 	topicName := requestBody.TopicName
-// 	message := requestBody.Message
-
-// 	topic, ok := topics.Load(topicName)
-// 	if !ok {
-// 		c.JSON(http.StatusNotFound, gin.H{"error": "Topic not found"})
-// 		return
-// 	}
-
-// 	topicObj := topic.(*Topic)
-// 	topicObj.Mutex.Lock()
-// 	defer topicObj.Mutex.Unlock()
-
-// 	if topicObj.Conn == nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": "No connections available"})
-// 		return
-// 	}
-
-// 	if err := topicObj.Conn.WriteMessage(websocket.TextMessage, []byte(message)); err != nil {
-// 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to publish message"})
-// 		return
-// 	}
-
-// 	c.JSON(http.StatusOK, gin.H{"message": "Message published successfully"})
-// }
