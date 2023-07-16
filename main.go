@@ -12,14 +12,19 @@ import (
 	logging "github.com/ipfs/go-log"
 	"github.com/libp2p/go-libp2p"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
+	"go.deanishe.net/env"
 )
 
 const (
 	rendezvousString = "myspace"
-	defaultPort      = "5002"
-	defaultAddr      = "127.0.0.1"
 	apiVersion       = "v0"
 	multiAddr        = "/ip4/0.0.0.0/tcp/0"
+)
+
+var (
+	defaultPort     = env.Get("MYSPACE_PUBSUB_DAEMON_PORT", "5002")
+	defaultAddr     = env.Get("MYSPACE_PUBSUB_DAEMON_ADDR", "127.0.0.1")
+	defaultLogLevel = env.Get("MYSPACE_PUBSUB_DAEMON_LOG_LEVEL", "error")
 )
 
 var (
@@ -30,10 +35,10 @@ var (
 		WriteBufferSize: 1024,
 	}
 
-	port = flag.String("port", defaultPort, "Port to listen on")
-	addr = flag.String("addr", defaultAddr, "Address to listen on")
-
-	apiPath = fmt.Sprintf("/api/%s", apiVersion)
+	port     = flag.String("port", defaultPort, "Port to listen on")
+	addr     = flag.String("addr", defaultAddr, "Address to listen on")
+	logLevel = flag.String("loglevel", defaultLogLevel, "Log level")
+	apiPath  = fmt.Sprintf("/api/%s", apiVersion)
 )
 
 func main() {
@@ -41,7 +46,7 @@ func main() {
 	flag.Parse()
 
 	// Set log level
-	logging.SetLogLevel("myspace", "info")
+	logging.SetLogLevel("myspace", *logLevel)
 	logger := logging.Logger("myspace")
 	logger.Info("Starting myspace libp2p pubsub server...")
 
@@ -53,7 +58,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	go discoverPeers(ctx, host, rendezvousString)
+	// FIMXE: go discoverPeers(ctx, host, rendezvousString)
 
 	pub, err = pubsub.NewGossipSub(ctx, host)
 	if err != nil {
@@ -64,11 +69,10 @@ func main() {
 	router := gin.Default()
 
 	// API Endpoints
-	router.GET(apiPath+"/pubsub/topics", listTopicsHandler)
-	// FIXME: router.POST(apiPath+"/pubsub/topics/:topicID", publishMessageHandler)
-	// FIMXE: router.GET(apiPath+"/pubsub/topics/:topicID", getTopicDetailsHandler)
-	router.GET(apiPath+"/pubsub/topics/:topicID/peers", listPeersHandler)
-	router.GET(apiPath+"/pubsub/topics/:topicID/join", joinTopicHandler)
+	router.GET(apiPath+"/topics", listTopicsHandler)
+	// FIXME: router.POST(apiPath+"/topics/:topicID", publishMessageHandler)
+	router.GET(apiPath+"/topics/:topicID/peers", listPeersHandler)
+	router.GET(apiPath+"/topics/:topicID", joinTopicHandler)
 
 	listenSocket := fmt.Sprintf("%s:%s", *addr, *port)
 	router.Run(listenSocket)
