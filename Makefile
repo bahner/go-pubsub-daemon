@@ -1,5 +1,7 @@
 #!/usr/bin/make -ef
 
+GO_VERSION ?= 1.19.1
+GO = go$(GO_VERSION)
 
 NAME = myspace-pubsub-daemon
 MODULE_NAME = github.com/bahner/myspace-pubsub-daemon
@@ -15,10 +17,10 @@ all: build image client
 build: tidy $(NAME)
 
 $(NAME): tidy
-	go build -o $(NAME)
+	$(GO) build -o $(NAME)
 
 tidy: go.mod
-	go mod tidy
+	$(GO) mod tidy
 
 serve: build
 	./$(NAME)
@@ -30,7 +32,7 @@ image:
 		.
 
 go.mod:
-	go mod init $(MODULE_NAME)
+	$(GO) mod init $(MODULE_NAME)
 
 install: build
 	install -Dm755 $(NAME) $(DESTDIR)$(PREFIX)/bin/$(NAME)
