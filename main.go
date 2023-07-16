@@ -35,10 +35,16 @@ var (
 		WriteBufferSize: 1024,
 	}
 
+	// API
+	apiPath = fmt.Sprintf("/api/%s", apiVersion)
+
+	// Logging
+	logger = logging.Logger("myspace")
+
+	// Flags
 	port     = flag.String("port", defaultPort, "Port to listen on")
 	addr     = flag.String("addr", defaultAddr, "Address to listen on")
-	logLevel = flag.String("loglevel", defaultLogLevel, "Log level")
-	apiPath  = fmt.Sprintf("/api/%s", apiVersion)
+	logLevel = flag.String("loglevel", defaultLogLevel, "Log level for libp2p")
 )
 
 func main() {
@@ -47,7 +53,6 @@ func main() {
 
 	// Set log level
 	logging.SetLogLevel("myspace", *logLevel)
-	logger := logging.Logger("myspace")
 	logger.Info("Starting myspace libp2p pubsub server...")
 
 	// Initialize libp2p host with DHT routing
@@ -58,7 +63,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// FIMXE: go discoverPeers(ctx, host, rendezvousString)
+	go discoverPeers(ctx, host, rendezvousString)
 
 	pub, err = pubsub.NewGossipSub(ctx, host)
 	if err != nil {

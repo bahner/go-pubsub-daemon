@@ -73,8 +73,6 @@ func joinTopicHandler(c *gin.Context) {
 	topic.Mutex.Unlock()
 
 	go handleClient(conn, topic)
-
-	c.JSON(http.StatusOK, gin.H{"message": "Joined topic successfully"})
 }
 
 // List Peers Handler
