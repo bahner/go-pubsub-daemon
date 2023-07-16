@@ -1,9 +1,9 @@
-ARG BUILD_IMAGE=golang:1.19.11-alpine
+ARG BUILD_IMAGE=golang:500-alpine
 FROM ${BUILD_IMAGE} as Build
 
 COPY . . 
 
-RUN GOPATH= go build -o /main main.go 
+RUN GOPATH= go build -o /main
 
 
 # Just copy the built artefact to a small image.
