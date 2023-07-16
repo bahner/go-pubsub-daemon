@@ -7,8 +7,6 @@ import (
 	"log"
 	"sync"
 
-	"go.deanishe.net/env"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	logging "github.com/ipfs/go-log"
@@ -19,6 +17,7 @@ import (
 	"github.com/libp2p/go-libp2p/core/peer"
 	drouting "github.com/libp2p/go-libp2p/p2p/discovery/routing"
 	dutil "github.com/libp2p/go-libp2p/p2p/discovery/util"
+	"go.deanishe.net/env"
 )
 
 const (
@@ -49,7 +48,6 @@ type Topic struct {
 }
 
 func main() {
-
 	ctx := context.Background()
 
 	flag.Parse()
@@ -84,43 +82,155 @@ func main() {
 	// Create new gin engine
 	router := gin.Default()
 
-	router.GET("/topic/:topicName", func(c *gin.Context) {
-		topicName := c.Param("topicName")
-		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
-		if err != nil {
-			return
-		}
+	// List Topics
+	router.GET("/api/topics", listTopicsHandler)
 
-		t, ok := topics.Load(topicName)
-		if !ok {
-			pubSubTopic, err := pub.Join(topicName)
-			if err != nil {
-				log.Fatal(err)
-			}
-			t = &Topic{PubSubTopic: pubSubTopic}
-			topics.Store(topicName, t)
-		}
+	// Create Topic
+	router.POST("/api/topics", createTopicHandler)
 
-		topic := t.(*Topic)
+	// Get Topic Details
+	router.GET("/api/topics/:topicID", getTopicDetailsHandler)
 
-		go handlePubSub(conn, topic)
-	})
+	// Join Topic
+	router.POST("/api/topics/:topicID/join", joinTopicHandler)
+
+	// List Peers in a Topic
+	router.GET("/api/topics/:topicID/peers", listPeersHandler)
+
+	// Connect to WebSocket
+	router.GET("/api/topics/:topicID/connect", connectWebSocketHandler)
 
 	router.Run(listenSocket)
 }
 
-func handlePubSub(conn *websocket.Conn, topic *Topic) {
-	topic.Mutex.Lock()
-	if topic.Conn != nil {
-		topic.Conn.Close()
-	}
-	topic.Conn = conn
-	topic.Mutex.Unlock()
+func listTopicsHandler(c *gin.Context) {
+	var topicsList []string
+	topics.Range(func(key, value interface{}) bool {
+		topicsList = append(topicsList, key.(string))
+		return true
+	})
 
-	go handleClient(conn, topic)
+	c.JSON(200, gin.H{"topics": topicsList})
 }
+
+func createTopicHandler(c *gin.Context) {
+	var requestBody struct {
+		TopicName string `json:"topicName"`
+	}
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	topicName := requestBody.TopicName
+
+	_, ok := topics.Load(topicName)
+	if ok {
+		c.JSON(400, gin.H{"error": "Topic already exists"})
+		return
+	}
+
+	pubSubTopic, err := pub.Join(topicName)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	topic := &Topic{
+		PubSubTopic: pubSubTopic,
+		Mutex:       sync.Mutex{},
+	}
+
+	topics.Store(topicName, topic)
+
+	c.JSON(201, gin.H{"topic": topicName})
+}
+
+func getTopicDetailsHandler(c *gin.Context) {
+	topicName := c.Param("topicID")
+
+	topic, ok := topics.Load(topicName)
+	if !ok {
+		c.JSON(404, gin.H{"error": "Topic not found"})
+		return
+	}
+
+	c.JSON(200, gin.H{"topic": topicName})
+}
+
+func joinTopicHandler(c *gin.Context) {
+	topicName := c.Param("topicID")
+
+	topic, ok := topics.Load(topicName)
+	if !ok {
+		c.JSON(404, gin.H{"error": "Topic not found"})
+		return
+	}
+
+	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to upgrade connection"})
+		return
+	}
+
+	topicObj := topic.(*Topic)
+	topicObj.Mutex.Lock()
+	if topicObj.Conn != nil {
+		topicObj.Conn.Close()
+	}
+	topicObj.Conn = conn
+	topicObj.Mutex.Unlock()
+
+	go handleClient(conn, topicObj)
+
+	c.JSON(200, gin.H{"message": "Joined topic successfully"})
+}
+
+func listPeersHandler(c *gin.Context) {
+	topicName := c.Param("topicID")
+
+	topic, ok := topics.Load(topicName)
+	if !ok {
+		c.JSON(404, gin.H{"error": "Topic not found"})
+		return
+	}
+
+	// Retrieve and return the list of peers in the topic
+	// ...
+
+	c.JSON(200, gin.H{"peers": []string{}})
+}
+
+func connectWebSocketHandler(c *gin.Context) {
+	topicName := c.Param("topicID")
+
+	topic, ok := topics.Load(topicName)
+	if !ok {
+		c.JSON(404, gin.H{"error": "Topic not found"})
+		return
+	}
+
+	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to upgrade connection"})
+		return
+	}
+
+	topicObj := topic.(*Topic)
+	topicObj.Mutex.Lock()
+	if topicObj.Conn != nil {
+		topicObj.Conn.Close()
+	}
+	topicObj.Conn = conn
+	topicObj.Mutex.Unlock()
+
+	go handleClient(conn, topicObj)
+
+	c.JSON(200, gin.H{"message": "WebSocket connection established"})
+}
+
 func handleClient(conn *websocket.Conn, topic *Topic) {
-	msg := fmt.Sprintf("Welcome to the chat room %q!", topic.PubSubTopic)
+	msg := fmt.Sprintf("Welcome to the topic %q!", topic.PubSubTopic)
 	sendText(conn, msg)
 
 	sub, err := topic.PubSubTopic.Subscribe()
