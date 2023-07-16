@@ -1,4 +1,4 @@
-module myspace
+module github.com/bahner/myspace-pubsub-daemon
 
 go 1.20
 

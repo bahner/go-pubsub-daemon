@@ -2,6 +2,7 @@
 
 
 NAME = myspace-pubsub-daemon
+MODULE_NAME = github.com/bahner/myspace-pubsub-daemon
 PREFIX ?= /usr/local
 
 ifneq (,$(wildcard ./.env))
@@ -29,7 +30,7 @@ image:
 		.
 
 go.mod:
-	go mod init $(NAME)
+	go mod init $(MODULE_NAME)
 
 install: build
 	install -Dm755 $(NAME) $(DESTDIR)$(PREFIX)/bin/$(NAME)
