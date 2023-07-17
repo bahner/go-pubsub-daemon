@@ -3,19 +3,12 @@
 This is a simple libp2p pubsub daemon. It is written because
 pubsub is being removed from kubo.
 
-You can subscribe to a libp2p pubsub topic, eg. MYTOPIC,
-by connecting to `http://localhost:5002/topic/MYTOPIC`
+You can subscribe to a libp2p pubsub topic, eg. `MYTOPIC`,
+by connecting to `http://localhost:5002/api/v0/topics/MYTOPIC`
 where you will receive a websocket that reads and writes
-to this libp2p pubsub topic. The only configuration
-possible is `MYTOPIC` which is just the topicname of
-the topic you wish to subscribe to.
+to this libp2p pubsub topic.
 
 Easy peasy. Lemon squeezy.
-
-It is written to be a backend for myspace, where one and
-only one object should subscribe to a topic at a time.
-This is the reason why if Someone™ or Something™ connects
-to a topic, existing websockets will be disconnected.
 
 If you run a server on most any computer it will connect to
 peers with the same rendezvous string: `myspace`.
@@ -25,6 +18,15 @@ peers with the same rendezvous string: `myspace`.
 Docker: `make all && docker-compose up`
 Development: `make serve`
 Install: `make install # Installs to /usr/local/myspace-pubsub-daemon by default.`
+
+## API
+
+A simple RESTful API at localhost:5002/api/v0. The following endpoints
+exists.
+
+- GET /topics - List topics
+- GET /topics/topicName - Establishes a websocket that subscribes to the topic
+- GET /topics/topicName/peers - List peers for the topics. NB! Local peers does not show up.
 
 ## Daemon
 
@@ -61,12 +63,12 @@ in `.env` and are as follows.
 ```bash
 MYSPACE_PUBSUB_DAEMON_PORT="5002" # The port the daemon is listens on
 MYSPACE_PUBSUB_DAEMON_ADDR="127.0.0.1" # The interface the daemon binds to
+MYSPACE_PUBSUB_DAEMON_LOG_LEVEL="info" # Log level for the libp2p part of the daemon
 
-IMAGE=docker.io/bahner/myspace:latest # The name of the docker image to be used or built
+IMAGE=docker.io/bahner/myspace-pubsub-daemon:latest # The name of the docker image to be used or built
 
-GO_VERSION=1.19.11 # Version of go. At the time of writing go1.20 does not work with quic-go.
-GO=go${GO_VERSION} # The name of go binary to use
-BUILD_IMAGE=golang:${GO_VERSION}-alpine # Image to used for building the daemon in docker.
+GO=go # The name of go binary to use
+BUILD_IMAGE=golang:alpine # Image to used for building the daemon in docker.
 ```
 
 ## Docker
