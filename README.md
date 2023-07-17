@@ -11,7 +11,7 @@ to this libp2p pubsub topic.
 Easy peasy. Lemon squeezy.
 
 If you run a server on most any computer it will connect to
-peers with the same rendezvous string: `myspace`.
+peers with the same rendezvous string: `myspace` by default.
 
 ## TL;DR
 
