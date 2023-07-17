@@ -1,5 +1,6 @@
 #!/usr/bin/make -ef
 
+GO ?= go
 
 NAME = myspace-pubsub-daemon
 MODULE_NAME = github.com/bahner/myspace-pubsub-daemon
@@ -15,10 +16,10 @@ all: build image client
 build: tidy $(NAME)
 
 $(NAME): tidy
-	go build -o $(NAME)
+	$(GO) build -o $(NAME)
 
 tidy: go.mod
-	go mod tidy
+	$(GO) mod tidy
 
 serve: build
 	./$(NAME)
@@ -30,19 +31,19 @@ image:
 		.
 
 go.mod:
-	go mod init $(MODULE_NAME)
+	$(GO) mod init $(MODULE_NAME)
 
 install: build
 	install -Dm755 $(NAME) $(DESTDIR)$(PREFIX)/bin/$(NAME)
 
 client:
-	make -C client|
+	make -C client
 
 clean:
 	rm -f $(NAME)
 	make -C client clean
 
-dist-clean: clean
+distclean: clean
 	rm -f $(shell git ls-files --exclude-standard --others)
 
 .PHONY: build client serve tidy

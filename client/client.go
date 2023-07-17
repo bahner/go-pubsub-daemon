@@ -11,14 +11,16 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var addr = flag.String("baseurl", "localhost:5002", "http service address")
+var addr = flag.String("baseurl", "ws://localhost:5002", "http service address")
+var api = *addr + "/api/v0"
 var topic = flag.String("topicname", "myspace", "websocket topic")
 
 func main() {
 	flag.Parse()
 
 	// The WebSocket URL
-	u := fmt.Sprintf("ws://%s/topic/%s", *addr, *topic)
+	u := fmt.Sprintf("%s/topics/%s", api, *topic)
+	fmt.Println("Connecting to:", u)
 
 	// Connect to the WebSocket server
 	c, _, err := websocket.DefaultDialer.Dial(u, nil)
