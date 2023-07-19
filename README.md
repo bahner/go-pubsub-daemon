@@ -1,5 +1,7 @@
 # myspace-pubsub-daemon
 
+[![Go](https://github.com/bahner/myspace-pubsub-daemon/actions/workflows/go.yml/badge.svg)](https://github.com/bahner/myspace-pubsub-daemon/actions/workflows/go.yml)
+
 This is a simple libp2p pubsub daemon. It is written because
 pubsub is being removed from kubo.
 
