@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"sync"
 
@@ -16,6 +17,7 @@ var (
 	upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
+		CheckOrigin:     func(_ *http.Request) bool { return true },
 	}
 )
 
@@ -56,6 +58,9 @@ func getOrCreateTopic(topicID string) (*Topic, error) {
 
 // Join Topic Handler
 func joinTopicHandler(c *gin.Context) {
+
+	log.Printf("Received join request: %+v", c.Request)
+
 	topicID := c.Param("topicID")
 
 	topic, err := getOrCreateTopic(topicID)

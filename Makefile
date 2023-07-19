@@ -33,8 +33,9 @@ image:
 go.mod:
 	$(GO) mod init $(MODULE_NAME)
 
-install: build
+install: build client
 	install -Dm755 $(NAME) $(DESTDIR)$(PREFIX)/bin/$(NAME)
+	install -Dm755 client/client $(DESTDIR)$(PREFIX)/bin/$(NAME)-client
 
 client:
 	make -C client

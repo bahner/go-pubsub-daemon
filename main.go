@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	logging "github.com/ipfs/go-log"
 	"github.com/libp2p/go-libp2p"
@@ -65,14 +66,44 @@ func main() {
 	}
 
 	// Create new gin engine
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
+
+	router.SetTrustedProxies(nil)
+	router.Use(gin.Recovery())
+	router.Use(gin.Logger())
+	router.Use(gin.ErrorLogger())
+
+	listenSocket := fmt.Sprintf("%s:%s", *addr, *port)
 
 	// API Endpoints
 	router.GET(apiPath+"/topics", listTopicsHandler)
 	router.GET(apiPath+"/topics/:topicID/peers", listPeersHandler)
 	router.GET(apiPath+"/topics/:topicID", joinTopicHandler)
 
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	config.AllowCredentials = false
+	config.AllowHeaders = []string{
+		"Accept-Encoding:",
+		"Accept-Language:",
+		"Authorization",
+		"Content-Length",
+		"Content-Type",
+		"Origin",
+		"Sec-GPC:",
+		"Sec-WebSocket-Extensions",
+		"Sec-WebSocket-Key",
+		"Sec-WebSocket-Protocol",
+		"Sec-WebSocket-Version",
+		"Upgrade",
+		"User-Agent:",
+		"X-CSRF-Token",
+	}
+	config.AllowMethods = []string{"GET", "POST", "OPTIONS"}
+	config.AllowWildcard = true
+	router.Use(cors.New(config))
+
 	// Start server on the configured socket
-	listenSocket := fmt.Sprintf("%s:%s", *addr, *port)
 	router.Run(listenSocket)
 }
