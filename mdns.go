@@ -41,15 +41,16 @@ func discoverMDNSPeers(ctx context.Context, h host.Host, rendezvous string) chan
 		peerChan := initMDNS(h, rendezvous)
 
 		for peer := range peerChan {
+			log.Debugf("Found peer: %s\n", peer.ID.Pretty())
 			if peer.ID == h.ID() {
 				continue // Skip self connection
 			}
 
 			err := h.Connect(ctx, peer)
 			if err != nil {
-				log.Debugf("Failed connecting to %s, error: %v\n", peer.ID.Pretty(), err)
+				log.Debugf("Failed connecting to MDNS peer %s, error: %v\n", peer.ID.Pretty(), err)
 			} else {
-				log.Infof("Connected to: %s", peer.ID.Pretty())
+				log.Infof("Connected to MDNS peer: %s", peer.ID.Pretty())
 				anyConnected = true
 			}
 		}
