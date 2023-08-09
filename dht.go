@@ -86,7 +86,7 @@ func discoverDHTPeers(ctx context.Context, h host.Host, rendezvousString string)
 		}
 	}
 
-	log.Info("Peer discovery complete")
+	log.Info("DHT Peer discovery complete")
 
 	return nil
 }
