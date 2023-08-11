@@ -33,12 +33,12 @@ func initMDNS(peerhost host.Host, rendezvous string) chan peer.AddrInfo {
 	return n.PeerChan
 }
 
-func discoverMDNSPeers(ctx context.Context, h host.Host, rendezvous string) chan peer.AddrInfo {
+func discoverMDNSPeers(ctx context.Context, h host.Host, serviceName string) chan peer.AddrInfo {
 	anyConnected := false
 	for !anyConnected {
 
 		log.Info("Starting MDNS peer discovery.")
-		peerChan := initMDNS(h, rendezvous)
+		peerChan := initMDNS(h, serviceName)
 
 		for peer := range peerChan {
 			log.Debugf("Found peer: %s\n", peer.ID.Pretty())

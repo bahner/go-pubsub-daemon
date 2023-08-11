@@ -21,7 +21,7 @@ func discoverPeers(ctx context.Context, h host.Host, rendezvous string) {
 
 	wg.Add(2)
 	go discoverDHTPeers(ctx, h, rendezvous)
-	go discoverMDNSPeers(ctx, h, rendezvous)
+	go discoverMDNSPeers(ctx, h, "")
 	wg.Wait()
 
 	log.Info("Peer discovery completed.")
