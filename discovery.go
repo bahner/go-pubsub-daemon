@@ -10,7 +10,7 @@ import (
 
 var wg sync.WaitGroup
 
-func discoverPeers(ctx context.Context, h host.Host, rendezvous string) {
+func discoverPeers(ctx context.Context, h host.Host, rendezvous string, serviceName string) {
 
 	defer wg.Done()
 
@@ -21,7 +21,7 @@ func discoverPeers(ctx context.Context, h host.Host, rendezvous string) {
 
 	wg.Add(2)
 	go discoverDHTPeers(ctx, h, rendezvous)
-	go discoverMDNSPeers(ctx, h, "")
+	go discoverMDNSPeers(ctx, h, serviceName)
 	wg.Wait()
 
 	log.Info("Peer discovery completed.")

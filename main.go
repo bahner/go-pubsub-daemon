@@ -19,10 +19,11 @@ const (
 )
 
 var (
-	defaultRendezvous = env.Get("MYSPACE_PUBSUB_DAEMON_RENDEZVOUS", "myspace")
-	defaultPort       = env.Get("MYSPACE_PUBSUB_DAEMON_PORT", "5002")
-	defaultAddr       = env.Get("MYSPACE_PUBSUB_DAEMON_ADDR", "127.0.0.1")
-	defaultLogLevel   = env.Get("MYSPACE_PUBSUB_DAEMON_LOG_LEVEL", "error")
+	defaultRendezvous  = env.Get("MYSPACE_PUBSUB_DAEMON_RENDEZVOUS", "myspace")
+	defaultPort        = env.Get("MYSPACE_PUBSUB_DAEMON_PORT", "5002")
+	defaultAddr        = env.Get("MYSPACE_PUBSUB_DAEMON_ADDR", "127.0.0.1")
+	defaultLogLevel    = env.Get("MYSPACE_PUBSUB_DAEMON_LOG_LEVEL", "error")
+	defaultServiceName = env.Get("MYSPACE_PUBSUB_DAEMON_SERVICE_NAME", "myspace")
 )
 
 var (
@@ -34,10 +35,11 @@ var (
 	logger = logging.Logger("myspace")
 
 	// Flags
-	port       = flag.String("port", defaultPort, "Port to listen on")
-	addr       = flag.String("addr", defaultAddr, "Address to listen on")
-	logLevel   = flag.String("loglevel", defaultLogLevel, "Log level for libp2p")
-	rendezvous = flag.String("rendezvous", defaultRendezvous, "Unique string to identify group of nodes. Share this with your friends to let them connect with you")
+	port        = flag.String("port", defaultPort, "Port to listen on")
+	addr        = flag.String("addr", defaultAddr, "Address to listen on")
+	logLevel    = flag.String("loglevel", defaultLogLevel, "Log level for libp2p")
+	rendezvous  = flag.String("rendezvous", defaultRendezvous, "Unique string to identify group of nodes. Share this with your friends to let them connect with you")
+	serviceName = flag.String("service-name", defaultServiceName, "serviceName for MDNS discovery")
 )
 
 func main() {
@@ -57,7 +59,7 @@ func main() {
 	}
 
 	// Start peer discovery to find other peers
-	go discoverPeers(ctx, host, *rendezvous)
+	go discoverPeers(ctx, host, *rendezvous, *serviceName)
 
 	// Start pubsub service
 	pub, err = pubsub.NewGossipSub(ctx, host)
