@@ -2,8 +2,9 @@
 
 GO ?= go
 
-NAME = myspace-pubsub-daemon
-MODULE_NAME = github.com/bahner/myspace-pubsub-daemon
+NAME = go-pubsub-daemon
+CLIENT_NAME = $(NAME)-client
+MODULE_NAME = github.com/bahner/go-pubsub-daemon
 PREFIX ?= /usr/local
 
 ifneq (,$(wildcard ./.env))
@@ -34,8 +35,8 @@ go.mod:
 	$(GO) mod init $(MODULE_NAME)
 
 install: build client
-	install -Dm755 $(NAME) $(DESTDIR)$(PREFIX)/bin/$(NAME)
-	install -Dm755 client/client $(DESTDIR)$(PREFIX)/bin/$(NAME)-client
+	sudo install -Dm755 $(NAME) $(DESTDIR)$(PREFIX)/bin/$(NAME)
+	sudo install -Dm755 client/$(CLIENT_NAME) $(DESTDIR)$(PREFIX)/bin/$(NAME)-client
 
 client:
 	make -C client

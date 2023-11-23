@@ -14,7 +14,7 @@ func discoverPeers(ctx context.Context, h host.Host, rendezvous string) {
 
 	defer wg.Done()
 
-	log.Info("libp2p node created: ", h.ID().Pretty(), " ", h.Addrs())
+	log.Info("libp2p node created: ", h.ID().String(), " ", h.Addrs())
 
 	// Start peer discovery to find other peers
 	log.Debug("Starting peer discovery...")

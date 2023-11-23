@@ -4,13 +4,13 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
 
+	"github.com/bahner/go-ma"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	logging "github.com/ipfs/go-log"
 	"github.com/libp2p/go-libp2p"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
+	log "github.com/sirupsen/logrus"
 	"go.deanishe.net/env"
 )
 
@@ -19,19 +19,16 @@ const (
 )
 
 var (
-	defaultRendezvous = env.Get("MYSPACE_PUBSUB_DAEMON_RENDEZVOUS", "myspace")
-	defaultPort       = env.Get("MYSPACE_PUBSUB_DAEMON_PORT", "5002")
-	defaultAddr       = env.Get("MYSPACE_PUBSUB_DAEMON_ADDR", "127.0.0.1")
-	defaultLogLevel   = env.Get("MYSPACE_PUBSUB_DAEMON_LOG_LEVEL", "error")
+	defaultRendezvous = env.Get("GO_PUBSUB_DAEMON_RENDEZVOUS", ma.RENDEZVOUS)
+	defaultPort       = env.Get("GO_PUBSUB_DAEMON_PORT", "5002")
+	defaultAddr       = env.Get("GO_PUBSUB_DAEMON_ADDR", "127.0.0.1")
+	defaultLogLevel   = env.Get("GO_PUBSUB_DAEMON_LOG_LEVEL", "error")
 )
 
 var (
 
 	// API
 	apiPath = fmt.Sprintf("/api/%s", apiVersion)
-
-	// Logging for libp2p
-	logger = logging.Logger("myspace")
 
 	// Flags
 	port       = flag.String("port", defaultPort, "Port to listen on")
@@ -45,8 +42,12 @@ func main() {
 	flag.Parse()
 
 	// Set log level
-	logging.SetLogLevel("myspace", *logLevel)
-	logger.Info("Starting myspace libp2p pubsub server...")
+	l, err := log.ParseLevel(*logLevel)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.SetLevel(l)
+	log.Info("Starting go-pubsub-daemon")
 
 	// Start libp2p host
 	host, err := libp2p.New(

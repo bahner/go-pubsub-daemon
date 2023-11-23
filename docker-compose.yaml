@@ -1,10 +1,10 @@
 ---
 
 services:
-  myspace-pubsub-daemon:
+  go-pubsub-daemon:
     image: ${IMAGE}
     ports:
-      - "${MYSPACE_PUBSUB_DAEMON_ADDR}:${MYSPACE_PUBSUB_DAEMON_PORT}:${MYSPACE_PUBSUB_DAEMON_PORT}"
+      - "${GO_PUBSUB_DAEMON_ADDR}:${GO_PUBSUB_DAEMON_PORT}:${GO_PUBSUB_DAEMON_PORT}"
     environment:
-      - MYSPACE_PUBSUB_DAEMON_PORT
-      - MYSPACE_PUBSUB_DAEMON_ADDR
+      - GO_PUBSUB_DAEMON_PORT
+      - GO_PUBSUB_DAEMON_ADDR

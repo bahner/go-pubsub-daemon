@@ -1,6 +1,6 @@
-# myspace-pubsub-daemon
+# go-pubsub-daemon
 
-[![Go](https://github.com/bahner/myspace-pubsub-daemon/actions/workflows/go.yml/badge.svg)](https://github.com/bahner/myspace-pubsub-daemon/actions/workflows/go.yml)
+[![Go](https://github.com/bahner/go-pubsub-daemon/actions/workflows/go.yml/badge.svg)](https://github.com/bahner/go-pubsub-daemon/actions/workflows/go.yml)
 
 This is a simple libp2p pubsub daemon. It is written because
 pubsub is being removed from kubo.
@@ -13,13 +13,13 @@ to this libp2p pubsub topic.
 Easy peasy. Lemon squeezy.
 
 If you run a server on most any computer it will connect to
-peers with the same rendezvous string: `myspace` by default.
+peers with the same rendezvous string: `/ma/0.0.1` by default.
 
 ## TL;DR
 
 Docker: `make all && docker-compose up`
 Development: `make serve`
-Install: `make install # Installs to /usr/local/myspace-pubsub-daemon by default.`
+Install: `make install # Installs to /usr/local/go-pubsub-daemon by default.`
 
 ## API
 
@@ -35,7 +35,7 @@ exists.
 The daemon starts a libp2p node and connects via rendezvous
 discovery. It listen on all interfaces on a random tcp port.
 
-For options run `./myspace-pubsub-daemon -help`. Please note
+For options run `./go-pubsub-daemon -help`. Please note
 that the default reported reflects your current environment
 settings.
 
@@ -63,11 +63,11 @@ will be defaults for the application. The defaults are set
 in `.env` and are as follows.
 
 ```bash
-MYSPACE_PUBSUB_DAEMON_PORT="5002" # The port the daemon is listens on
-MYSPACE_PUBSUB_DAEMON_ADDR="127.0.0.1" # The interface the daemon binds to
-MYSPACE_PUBSUB_DAEMON_LOG_LEVEL="info" # Log level for the libp2p part of the daemon
+GO_PUBSUB_DAEMON_PORT="5002" # The port the daemon is listens on
+GO_PUBSUB_DAEMON_ADDR="127.0.0.1" # The interface the daemon binds to
+GO_PUBSUB_DAEMON_LOG_LEVEL="info" # Log level for the libp2p part of the daemon
 
-IMAGE=docker.io/bahner/myspace-pubsub-daemon:latest # The name of the docker image to be used or built
+IMAGE=docker.io/bahner/go-pubsub-daemon:latest # The name of the docker image to be used or built
 
 GO=go # The name of go binary to use
 BUILD_IMAGE=golang:alpine # Image to used for building the daemon in docker.
@@ -78,7 +78,7 @@ BUILD_IMAGE=golang:alpine # Image to used for building the daemon in docker.
 Inside the docker container the service listens on 0.0.0.0.
 This is hardcoded in the Dockerfile.
 
-The `MYSPACE_PUBSUB_DAEMON_ADDR` variable is used by
+The `GO_PUBSUB_DAEMON_ADDR` variable is used by
 docker-compose for binding to a port on the host system.
 
 To start the service in docker simply run: `docker-compose up`.
