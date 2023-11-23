@@ -1,2 +1,4 @@
+github.com/bahner/go-ma v0.0.3-0.20231123062601-658616d62de0 h1:8frXIDpj15AMnAAH3X2EmIN74mR2P2rFoh99vMmgpag=
+github.com/bahner/go-ma v0.0.3-0.20231123062601-658616d62de0/go.mod h1:j7zxx7dS8Vx37Bpr31XO3II6lvNTWp7pC7MDEIZU3xM=
 github.com/gorilla/websocket v1.5.0 h1:PPwGk2jz7EePpoHN/+ClbZu8SPxiqlu12wZP/3sWmnc=
 github.com/gorilla/websocket v1.5.0/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=

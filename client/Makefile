@@ -1,18 +1,18 @@
 #!/usr/bin/make -ef
 
-NAME = client
-MODULE_NAME = myspace/$(NAME)
+NAME = go-pubsub-daemon-client
+PREFIX ?= /usr/local
 
-build: tidy
+$(NAME): tidy
 	go build -o $(NAME)
 
 tidy: go.mod
 	go mod tidy
 
-go.mod:
-	go mod init $(MODULE_NAME)
-
 clean:
 	rm -f client $(NAME)
+
+install: $(NAME)
+	sudo mv $(NAME) $(PREFIX)/bin
 
 .PHONY: build clean tidy

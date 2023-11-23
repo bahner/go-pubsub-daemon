@@ -5,21 +5,25 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"strings"
 
+	"github.com/bahner/go-ma"
 	"github.com/gorilla/websocket"
 )
 
 var addr = flag.String("baseurl", "ws://localhost:5002", "http service address")
 var api = *addr + "/api/v0"
-var topic = flag.String("topicname", "myspace", "websocket topic")
+var topic = flag.String("topicname", ma.BROADCAST, "websocket topic")
 
 func main() {
 	flag.Parse()
 
+	urlEscapedTopic := url.QueryEscape(*topic)
+
 	// The WebSocket URL
-	u := fmt.Sprintf("%s/topics/%s", api, *topic)
+	u := fmt.Sprintf("%s/topics/%s", api, urlEscapedTopic)
 	fmt.Println("Connecting to:", u)
 
 	// Connect to the WebSocket server
